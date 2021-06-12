@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Services
@@ -8,5 +9,7 @@ namespace Services
         void Init(string sourceDirectoryPath, string targetDirectoryPath, IMessageLogger messageLogger);
         Task CopyDirectory();
         bool ValidatePaths(out List<ValidationMessage> validationMessages);
+        void OnPathsValidated(Action<ValidationMessage> onvalidatedDelegate);
+
     }
 }

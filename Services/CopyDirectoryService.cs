@@ -74,8 +74,6 @@ namespace Services
                 validationMessages.Add(new(e.Message, MessageType.Error));
             }
 
-
-
             return validationMessages.Count == 0;
         }
 
@@ -98,6 +96,12 @@ namespace Services
 
         }
 
-
+        public void OnPathsValidated(Action<ValidationMessage> onvalidatedDelegate)
+        {
+            if (new DirectoryInfo(_targetDirectoryPath).Exists)
+            {
+                onvalidatedDelegate(new ValidationMessage("The source path already exists. Copying will override the folder's contents.", MessageType.Warning));
+            }
+        }
     }
 }

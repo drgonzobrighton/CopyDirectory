@@ -1,5 +1,6 @@
 ﻿using Services;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace CopyDirectory
@@ -7,12 +8,15 @@ namespace CopyDirectory
     public class CopyDirectoryApplication
     {
         private readonly ICopyDirectoryService _directoryCopyService;
-        private readonly IMessageLogger _progressLogger;
+        private readonly IMessageLogger _messageLogger;
+
+        private List<ValidationMessage> _userInputValidationMessages;
+        private bool _canCopyFiles = true;
 
         public CopyDirectoryApplication(ICopyDirectoryService directoryCopyService, IMessageLogger progressLogger)
         {
             _directoryCopyService = directoryCopyService;
-            _progressLogger = progressLogger;
+            _messageLogger = progressLogger;
         }
 
         public async Task Run()
@@ -21,15 +25,56 @@ namespace CopyDirectory
 
             do
             {
+                _userInputValidationMessages = new();
 
                 if (HandleUserInput())
                 {
-                    await CopyDirectory();
+                    _directoryCopyService.OnPathsValidated(OnUserInputValidated);
+
+                    if (_canCopyFiles)
+                    {
+                        await CopyDirectory();
+                    }
+                }
+                else
+                {
+                    foreach (var message in _userInputValidationMessages)
+                    {
+                        _messageLogger.LogMessage(message.Message, message.MessageType);
+                    }
                 }
 
                 PromtExit(ref exitApp);
 
             } while (!exitApp);
+        }
+
+        public void OnUserInputValidated(ValidationMessage message)
+        {
+            _messageLogger.LogMessage(message.Message, message.MessageType);
+            _messageLogger.LogMessage("\n Please press Y to copy the source directory or N to re-enter the paths.");
+
+            string response;
+
+            while (true)
+            {
+
+                response = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(response) || (response.ToLower() != "y" && response.ToLower() != "n"))
+                {
+                    _messageLogger.LogMessage("Please either press Y or N", MessageType.Error);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (response.ToLower() == "N")
+            {
+                _canCopyFiles = false;
+            }
         }
 
         private async Task CopyDirectory()
@@ -41,7 +86,7 @@ namespace CopyDirectory
             catch (Exception e)
             {
 
-                _progressLogger.LogMessage(e.Message, MessageType.Error);
+                _messageLogger.LogMessage(e.Message, MessageType.Error);
 
             }
 
@@ -49,37 +94,25 @@ namespace CopyDirectory
 
         private bool HandleUserInput()
         {
-            var userInputIsValid = true;
 
-            (string sourceDir, string targetDir) = GetTargetAndSourceDirectories();
+            (string sourceDir, string targetDir) = GetTargetAndSourceDirectoriesFromUser();
 
-            _directoryCopyService.Init(sourceDir, targetDir, _progressLogger);
+            _directoryCopyService.Init(sourceDir, targetDir, _messageLogger);
 
-            userInputIsValid = ValidateUserInput(userInputIsValid);
-
-            return userInputIsValid;
-        }
-
-        private bool ValidateUserInput(bool userInputIsValid)
-        {
             if (!_directoryCopyService.ValidatePaths(out var validationMessages))
             {
-                userInputIsValid = false;
-
-                foreach (var message in validationMessages)
-                {
-                    _progressLogger.LogMessage(message.Message, message.MessageType);
-
-                }
-
+                _userInputValidationMessages = validationMessages;
+                return false;
             }
 
-            return userInputIsValid;
+            return true;
         }
+
+
 
         private void PromtExit(ref bool exitApp)
         {
-            Console.WriteLine("Would you like to continue? Press Y for yes or any other key to exit the application.");
+            Console.WriteLine("\nWould you like to continue? Press Y for yes or any other key to exit the application.");
             var response = Console.ReadLine();
 
             if (response.ToLower() != "y")
@@ -90,7 +123,7 @@ namespace CopyDirectory
 
 
 
-        private (string sourceDir, string targetDir) GetTargetAndSourceDirectories()
+        private (string sourceDir, string targetDir) GetTargetAndSourceDirectoriesFromUser()
         {
             var sourceDir = GetDirectoryPathFromUserInput("source");
             var targetDir = GetDirectoryPathFromUserInput("target");
@@ -101,16 +134,18 @@ namespace CopyDirectory
         private string GetDirectoryPathFromUserInput(string pathType)
         {
             string dirPath;
+
             while (true)
             {
-                Console.WriteLine($"Please enter the {pathType} directory path");
+                Console.WriteLine($"\nPlease enter the {pathType} directory path:");
                 dirPath = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(dirPath))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Path cannot be empty");
-                    Console.ResetColor();
+                    //Console.ForegroundColor = ConsoleColor.Red;
+                    //Console.WriteLine("Path cannot be empty\n");
+                    //Console.ResetColor();
+                    _messageLogger.LogMessage("Path cannot be empty\n", MessageType.Error);
                 }
                 else
                 {

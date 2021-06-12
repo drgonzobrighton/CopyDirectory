@@ -8,7 +8,6 @@ namespace CopyDirectory
     {
         static async Task Main(string[] args)
         {
-
             var services = ConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
 
@@ -21,7 +20,7 @@ namespace CopyDirectory
 
             services.AddSingleton<CopyDirectoryApplication>();
             services.AddScoped<ICopyDirectoryService, CopyDirectoryService>();
-            services.AddScoped<IProgressLogger, ProgressLogger>();
+            services.AddScoped<IMessageLogger, MessageLogger>();
 
             return services;
         }

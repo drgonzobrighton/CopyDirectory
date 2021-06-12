@@ -7,9 +7,9 @@ namespace CopyDirectory
     public class CopyDirectoryApplication
     {
         private readonly ICopyDirectoryService _directoryCopyService;
-        private readonly IProgressLogger _progressLogger;
+        private readonly IMessageLogger _progressLogger;
 
-        public CopyDirectoryApplication(ICopyDirectoryService directoryCopyService, IProgressLogger progressLogger)
+        public CopyDirectoryApplication(ICopyDirectoryService directoryCopyService, IMessageLogger progressLogger)
         {
             _directoryCopyService = directoryCopyService;
             _progressLogger = progressLogger;
@@ -21,25 +21,30 @@ namespace CopyDirectory
 
             do
             {
-                bool userInputIsValid = HandleUserInput();
 
-                if (userInputIsValid)
+                if (HandleUserInput())
                 {
-                    try
-                    {
-                        await _directoryCopyService.CopyDirectory(_progressLogger);
-                    }
-                    catch (Exception e)
-                    {
-
-                        _progressLogger.LogProgress(e.Message, MessageType.Error);
-                        exitApp = true;
-                    }
+                    await CopyDirectory();
                 }
 
                 PromtExit(ref exitApp);
 
             } while (!exitApp);
+        }
+
+        private async Task CopyDirectory()
+        {
+            try
+            {
+                await _directoryCopyService.CopyDirectory();
+            }
+            catch (Exception e)
+            {
+
+                _progressLogger.LogMessage(e.Message, MessageType.Error);
+
+            }
+
         }
 
         private bool HandleUserInput()
@@ -48,18 +53,24 @@ namespace CopyDirectory
 
             (string sourceDir, string targetDir) = GetTargetAndSourceDirectories();
 
-            _directoryCopyService.Init(sourceDir, targetDir);
+            _directoryCopyService.Init(sourceDir, targetDir, _progressLogger);
 
+            userInputIsValid = ValidateUserInput(userInputIsValid);
+
+            return userInputIsValid;
+        }
+
+        private bool ValidateUserInput(bool userInputIsValid)
+        {
             if (!_directoryCopyService.ValidatePaths(out var validationMessages))
             {
                 userInputIsValid = false;
 
                 foreach (var message in validationMessages)
                 {
-                    _progressLogger.LogProgress(message.Message, message.MessageType);
+                    _progressLogger.LogMessage(message.Message, message.MessageType);
 
                 }
-
 
             }
 
@@ -81,44 +92,33 @@ namespace CopyDirectory
 
         private (string sourceDir, string targetDir) GetTargetAndSourceDirectories()
         {
-            string sourceDir = null;
-            string targetDir = null;
-
-            while (true)
-            {
-                Console.WriteLine("Please enter the source directory");
-                sourceDir = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(sourceDir))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Please enter a valid source directory");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            while (true)
-            {
-                Console.WriteLine("Please enter the target directory");
-                targetDir = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(targetDir))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Please enter a valid target directory");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    break;
-                }
-            }
+            var sourceDir = GetDirectoryPathFromUserInput("source");
+            var targetDir = GetDirectoryPathFromUserInput("target");
 
             return (sourceDir, targetDir);
+        }
+
+        private string GetDirectoryPathFromUserInput(string pathType)
+        {
+            string dirPath;
+            while (true)
+            {
+                Console.WriteLine($"Please enter the {pathType} directory path");
+                dirPath = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(dirPath))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Path cannot be empty");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return dirPath;
         }
     }
 }

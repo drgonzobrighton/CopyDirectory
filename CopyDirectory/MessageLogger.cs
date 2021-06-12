@@ -4,12 +4,12 @@ using System;
 
 namespace CopyDirectory
 {
-    public class ProgressLogger : IProgressLogger
+    public class MessageLogger : IMessageLogger
     {
-        public void LogProgress(string progress, MessageType messageType = MessageType.Info)
+        public void LogMessage(string message, MessageType messageType = MessageType.Info)
         {
             Console.ForegroundColor = Converters.ConvertMessageTypeToConsoleColour(messageType);
-            Console.WriteLine(progress);
+            Console.WriteLine(message);
             Console.ResetColor();
         }
     }

@@ -5,9 +5,8 @@ namespace Services
 {
     public interface ICopyDirectoryService
     {
-        void Init(string sourceDirectoryPath, string targetDirectoryPath);
-        Task CopyDirectory(IProgressLogger progressLogger);
-
+        void Init(string sourceDirectoryPath, string targetDirectoryPath, IMessageLogger messageLogger);
+        Task CopyDirectory();
         bool ValidatePaths(out List<ValidationMessage> validationMessages);
     }
 }

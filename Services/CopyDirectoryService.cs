@@ -1,97 +1,103 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Services
 {
     public class CopyDirectoryService : ICopyDirectoryService
     {
-        private DirectoryInfo _sourceDirectoryInfo;
-        private DirectoryInfo _targetDirectoryInfo;
+        //private DirectoryInfo _sourceDirectoryInfo;
+        //private DirectoryInfo _targetDirectoryInfo;
+        private string _sourceDirectoryPath;
+        private string _targetDirectoryPath;
+        IMessageLogger _messageLogger;
 
-        public void Init(string sourceDirectoryPath, string targetDirectoryPath)
+        public void Init(string sourceDirectoryPath, string targetDirectoryPath, IMessageLogger messageLogger)
         {
-            _sourceDirectoryInfo = new(sourceDirectoryPath);
-            _targetDirectoryInfo = new(targetDirectoryPath);
+            _sourceDirectoryPath = sourceDirectoryPath;
+            _targetDirectoryPath = targetDirectoryPath;
+            _messageLogger = messageLogger;
         }
 
-        public async Task CopyDirectory(IProgressLogger progressLogger)
+        public async Task CopyDirectory()
         {
-            progressLogger.LogProgress("Starting..");
+            _messageLogger.LogMessage("Starting..");
 
-            await CopyDirectoryInternal(_sourceDirectoryInfo, _targetDirectoryInfo, progressLogger);
+            await CopyDirectoryInternal(new DirectoryInfo(_sourceDirectoryPath), new DirectoryInfo(_targetDirectoryPath));
 
-            progressLogger.LogProgress("Finished", MessageType.Success);
+            _messageLogger.LogMessage("Finished", MessageType.Success);
         }
 
-        private async Task CopyDirectoryInternal(DirectoryInfo sourceDirInfo, DirectoryInfo targetDirInfo, IProgressLogger progressLogger)
-        {
-            Directory.CreateDirectory(targetDirInfo.FullName);
 
-            foreach (FileInfo fi in sourceDirInfo.GetFiles())
-            {
-                progressLogger.LogProgress($"Copying {sourceDirInfo.FullName}/{fi.Name} to {targetDirInfo.FullName}/{fi.Name}");
-                fi.CopyTo(Path.Combine(targetDirInfo.FullName, fi.Name), true);
-            }
-
-            foreach (DirectoryInfo diSourceSubDir in sourceDirInfo.GetDirectories())
-            {
-                DirectoryInfo nextTargetSubDir = targetDirInfo.CreateSubdirectory(diSourceSubDir.Name);
-                progressLogger.LogProgress($"Created {nextTargetSubDir.FullName}");
-                await CopyDirectoryInternal(diSourceSubDir, nextTargetSubDir, progressLogger);
-            }
-
-        }
 
         public bool ValidatePaths(out List<ValidationMessage> validationMessages)
         {
             validationMessages = new();
 
-            if (_sourceDirectoryInfo.Exists)
+            try
             {
-                if (_sourceDirectoryInfo.FullName.ToLower() == _targetDirectoryInfo.FullName.ToLower())
+                var sourceDirInfo = new DirectoryInfo(_sourceDirectoryPath);
+
+
+                if (Path.IsPathRooted(_targetDirectoryPath))
                 {
-                    validationMessages.Add(new("The target directory is the same as the source directory", MessageType.Warning));
+                    if (!DriveInfo.GetDrives().Any(x => x.Name.ToLower() == Path.GetPathRoot(_targetDirectoryPath)))
+                    {
+                        validationMessages.Add(new("The target directory root does not exist", MessageType.Error));
+                    }
+                }
+                else
+                {
+                    validationMessages.Add(new("The target directory path must have a root", MessageType.Error));
+                }
+
+                if (sourceDirInfo.Exists)
+                {
+                    var targetDirInfo = new DirectoryInfo(_targetDirectoryPath);
+
+                    if (sourceDirInfo.FullName.ToLower() == targetDirInfo.FullName.ToLower())
+                    {
+                        validationMessages.Add(new("The target directory is the same as the source directory", MessageType.Warning));
+                    }
+                }
+                else
+                {
+                    validationMessages.Add(new("The source directory does not exist", MessageType.Error));
+
                 }
             }
-            else
+            catch (Exception e)
             {
-                validationMessages.Add(new("The source directory does not exist", MessageType.Error));
 
+                validationMessages.Add(new(e.Message, MessageType.Error));
             }
 
-            if (!IsValidPath(_targetDirectoryInfo.FullName))
-            {
-                validationMessages.Add(new("The target directory path is invalid", MessageType.Error));
-            }
+
 
             return validationMessages.Count == 0;
         }
 
-        private static bool IsValidPath(string path, bool exactPath = true)
+        private async Task CopyDirectoryInternal(DirectoryInfo sourceDirInfo, DirectoryInfo targetDirInfo)
         {
-            bool isValid = true;
+            Directory.CreateDirectory(targetDirInfo.FullName);
 
-            try
+            foreach (var fi in sourceDirInfo.GetFiles())
             {
-
-                if (exactPath)
-                {
-                    string root = Path.GetPathRoot(path);
-                    isValid = string.IsNullOrEmpty(root.Trim(new char[] { '\\', '/' })) == false;
-                }
-                else
-                {
-                    isValid = Path.IsPathRooted(path);
-                }
-            }
-            catch (Exception ex)
-            {
-                isValid = false;
+                _messageLogger.LogMessage($"Copying {sourceDirInfo.FullName}/{fi.Name} to {targetDirInfo.FullName}/{fi.Name}");
+                fi.CopyTo(Path.Combine(targetDirInfo.FullName, fi.Name), true);
             }
 
-            return isValid;
+            foreach (var diSourceSubDir in sourceDirInfo.GetDirectories())
+            {
+                DirectoryInfo nextTargetSubDir = targetDirInfo.CreateSubdirectory(diSourceSubDir.Name);
+                _messageLogger.LogMessage($"Created {nextTargetSubDir.FullName}");
+                await CopyDirectoryInternal(diSourceSubDir, nextTargetSubDir);
+            }
+
         }
+
+
     }
 }

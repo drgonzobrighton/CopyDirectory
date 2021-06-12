@@ -1,12 +1,27 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Services;
+using System.Threading.Tasks;
 
 namespace CopyDirectory
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var services = ConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+
+            await serviceProvider.GetService<CopyDirectoryApplication>().Run();
+        }
+
+        private static IServiceCollection ConfigureServices()
+        {
+            IServiceCollection services = new ServiceCollection();
+
+            services.AddSingleton<CopyDirectoryApplication>();
+            services.AddScoped<ICopyDirectoryService, CopyDirectoryService>();
+
+            return services;
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Services
             }
             else
             {
-                validationMessages.Add(new("The source directory does not exists", ValidationMessageType.Error));
+                validationMessages.Add(new("The source directory does not exist", ValidationMessageType.Error));
 
             }
 

@@ -17,12 +17,43 @@ namespace CopyDirectory
 
         public async Task Run()
         {
+            var exitApp = false;
+
+            do
+            {
+                bool userInputIsValid = HandleUserInput();
+
+                if (userInputIsValid)
+                {
+                    try
+                    {
+                        await _directoryCopyService.CopyDirectory(_progressLogger);
+                    }
+                    catch (Exception e)
+                    {
+
+                        _progressLogger.LogProgress(e.Message);
+                        exitApp = true;
+                    }
+                }
+
+                PromtExit(ref exitApp);
+
+            } while (!exitApp);
+        }
+
+        private bool HandleUserInput()
+        {
+            var userInputIsValid = true;
+
             (string sourceDir, string targetDir) = GetTargetAndSourceDirectories();
 
             _directoryCopyService.Init(sourceDir, targetDir);
 
             if (!_directoryCopyService.ValidatePaths(out var validationMessages))
             {
+                userInputIsValid = false;
+
                 foreach (var message in validationMessages)
                 {
                     var colour = GetForeGroundColour(message.MessageType);
@@ -31,17 +62,20 @@ namespace CopyDirectory
                     Console.ResetColor();
                 }
 
-                return;
+
             }
 
-            try
-            {
-                await _directoryCopyService.CopyDirectory(_progressLogger);
-            }
-            catch (Exception e)
-            {
+            return userInputIsValid;
+        }
 
-                _progressLogger.LogProgress(e.Message);
+        private void PromtExit(ref bool exitApp)
+        {
+            Console.WriteLine("Would you like to continue? Press Y for yes or any other key to exit the application.");
+            var response = Console.ReadLine();
+
+            if (response.ToLower() != "y")
+            {
+                exitApp = true;
             }
         }
 

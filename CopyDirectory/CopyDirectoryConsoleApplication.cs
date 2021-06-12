@@ -133,9 +133,6 @@ namespace CopyDirectory
 
                 if (string.IsNullOrWhiteSpace(dirPath))
                 {
-                    //Console.ForegroundColor = ConsoleColor.Red;
-                    //Console.WriteLine("Path cannot be empty\n");
-                    //Console.ResetColor();
                     _messageLogger.LogMessage("Path cannot be empty\n", MessageType.Error);
                 }
                 else

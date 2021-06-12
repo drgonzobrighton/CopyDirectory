@@ -27,7 +27,7 @@ namespace CopyDirectory
             {
                 _userInputValidationMessages = new();
 
-                if (HandleUserInput())
+                if (ValidateUserInput())
                 {
                     _directoryCopyService.OnPathsValidated(OnUserInputValidated);
 
@@ -92,7 +92,7 @@ namespace CopyDirectory
 
         }
 
-        private bool HandleUserInput()
+        private bool ValidateUserInput()
         {
 
             (string sourceDir, string targetDir) = GetTargetAndSourceDirectoriesFromUser();

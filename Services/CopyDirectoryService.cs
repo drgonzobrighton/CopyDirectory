@@ -85,6 +85,14 @@ namespace Services
             return isValid;
         }
 
+        public void OnPathsValidated(Action<string, MessageType> onvalidatedDelegate)
+        {
+            if (new DirectoryInfo(_targetDirectoryPath).Exists)
+            {
+                onvalidatedDelegate("The source path already exists. Copying will override the folder's contents.", MessageType.Warning);
+            }
+        }
+
         private async Task CopyDirectoryInternal(DirectoryInfo sourceDirInfo, DirectoryInfo targetDirInfo)
         {
             Directory.CreateDirectory(targetDirInfo.FullName);
@@ -104,12 +112,6 @@ namespace Services
 
         }
 
-        public void OnPathsValidated(Action<string, MessageType> onvalidatedDelegate)
-        {
-            if (new DirectoryInfo(_targetDirectoryPath).Exists)
-            {
-                onvalidatedDelegate("The source path already exists. Copying will override the folder's contents.", MessageType.Warning);
-            }
-        }
+
     }
 }

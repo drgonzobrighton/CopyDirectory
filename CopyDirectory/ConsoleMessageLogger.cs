@@ -4,7 +4,7 @@ using System;
 
 namespace CopyDirectory
 {
-    public class MessageLogger : IMessageLogger
+    public class ConsoleMessageLogger : IMessageLogger
     {
         public void LogMessage(string message, MessageType messageType = MessageType.Info)
         {

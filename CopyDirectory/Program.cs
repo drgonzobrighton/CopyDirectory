@@ -20,7 +20,7 @@ namespace CopyDirectory
 
             services.AddSingleton<ICopyDirectoryApplication, CopyDirectoryConsoleApplication>();
             services.AddScoped<ICopyDirectoryService, CopyDirectoryService>();
-            services.AddScoped<IMessageLogger, MessageLogger>();
+            services.AddScoped<IMessageLogger, ConsoleMessageLogger>();
 
             return services;
         }

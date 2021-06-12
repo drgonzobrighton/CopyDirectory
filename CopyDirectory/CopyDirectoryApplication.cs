@@ -32,7 +32,7 @@ namespace CopyDirectory
                     catch (Exception e)
                     {
 
-                        _progressLogger.LogProgress(e.Message);
+                        _progressLogger.LogProgress(e.Message, MessageType.Error);
                         exitApp = true;
                     }
                 }
@@ -56,10 +56,8 @@ namespace CopyDirectory
 
                 foreach (var message in validationMessages)
                 {
-                    var colour = GetForeGroundColour(message.MessageType);
-                    Console.ForegroundColor = colour;
-                    Console.WriteLine(message.Message);
-                    Console.ResetColor();
+                    _progressLogger.LogProgress(message.Message, message.MessageType);
+
                 }
 
 
@@ -79,15 +77,7 @@ namespace CopyDirectory
             }
         }
 
-        private static ConsoleColor GetForeGroundColour(ValidationMessageType messageType)
-        {
-            return messageType switch
-            {
-                ValidationMessageType.Warning => ConsoleColor.Yellow,
-                ValidationMessageType.Error => ConsoleColor.Red,
-                _ => ConsoleColor.Yellow
-            };
-        }
+
 
         private (string sourceDir, string targetDir) GetTargetAndSourceDirectories()
         {

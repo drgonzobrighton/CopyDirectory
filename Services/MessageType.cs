@@ -1,8 +1,10 @@
 ﻿namespace Services
 {
-    public enum ValidationMessageType
+    public enum MessageType
     {
+        Info,
         Warning,
+        Success,
         Error
     }
 }

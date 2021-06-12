@@ -22,7 +22,7 @@ namespace Services
 
             await CopyDirectoryInternal(_sourceDirectoryInfo, _targetDirectoryInfo, progressLogger);
 
-            progressLogger.LogProgress("Finished");
+            progressLogger.LogProgress("Finished", MessageType.Success);
         }
 
         private async Task CopyDirectoryInternal(DirectoryInfo sourceDirInfo, DirectoryInfo targetDirInfo, IProgressLogger progressLogger)
@@ -52,18 +52,18 @@ namespace Services
             {
                 if (_sourceDirectoryInfo.FullName.ToLower() == _targetDirectoryInfo.FullName.ToLower())
                 {
-                    validationMessages.Add(new("The target directory is the same as the source directory", ValidationMessageType.Warning));
+                    validationMessages.Add(new("The target directory is the same as the source directory", MessageType.Warning));
                 }
             }
             else
             {
-                validationMessages.Add(new("The source directory does not exist", ValidationMessageType.Error));
+                validationMessages.Add(new("The source directory does not exist", MessageType.Error));
 
             }
 
             if (!IsValidPath(_targetDirectoryInfo.FullName))
             {
-                validationMessages.Add(new("The target directory path is invalid", ValidationMessageType.Error));
+                validationMessages.Add(new("The target directory path is invalid", MessageType.Error));
             }
 
             return validationMessages.Count == 0;

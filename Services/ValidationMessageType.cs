@@ -3,6 +3,6 @@
     public enum ValidationMessageType
     {
         Warning,
-        Danger
+        Error
     }
 }

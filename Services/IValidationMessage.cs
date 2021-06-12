@@ -1,8 +1,5 @@
 ﻿namespace Services
 {
-    public interface IValidationMessage
-    {
-        string Message { get; init; }
-        ValidationMessageType MessageType { get; init; }
-    }
+    public record ValidationMessage(string Message, ValidationMessageType MessageType);
+
 }

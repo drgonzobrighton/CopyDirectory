@@ -7,17 +7,21 @@ namespace CopyDirectory
     public class CopyDirectoryApplication
     {
         private readonly ICopyDirectoryService _directoryCopyService;
+        private readonly IProgressLogger _progressLogger;
 
-        public CopyDirectoryApplication(ICopyDirectoryService directoryCopyService)
+        public CopyDirectoryApplication(ICopyDirectoryService directoryCopyService, IProgressLogger progressLogger)
         {
             _directoryCopyService = directoryCopyService;
+            _progressLogger = progressLogger;
         }
 
         public async Task Run()
         {
             (string sourceDir, string targetDir) = GetTargetAndSourceDirectories();
 
-            if (!_directoryCopyService.ValidatePaths(sourceDir, targetDir, out var validationMessages))
+            _directoryCopyService.Init(sourceDir, targetDir);
+
+            if (!_directoryCopyService.ValidatePaths(out var validationMessages))
             {
                 foreach (var message in validationMessages)
                 {
@@ -30,7 +34,15 @@ namespace CopyDirectory
                 return;
             }
 
-            await _directoryCopyService.CopyDirectory(sourceDir, targetDir);
+            try
+            {
+                await _directoryCopyService.CopyDirectory(_progressLogger);
+            }
+            catch (Exception e)
+            {
+
+                _progressLogger.LogProgress(e.Message);
+            }
         }
 
         private static ConsoleColor GetForeGroundColour(ValidationMessageType messageType)
@@ -38,14 +50,51 @@ namespace CopyDirectory
             return messageType switch
             {
                 ValidationMessageType.Warning => ConsoleColor.Yellow,
-                ValidationMessageType.Danger => ConsoleColor.Red,
+                ValidationMessageType.Error => ConsoleColor.Red,
                 _ => ConsoleColor.Yellow
             };
         }
 
         private (string sourceDir, string targetDir) GetTargetAndSourceDirectories()
         {
-            throw new NotImplementedException();
+            string sourceDir = null;
+            string targetDir = null;
+
+            while (true)
+            {
+                Console.WriteLine("Please enter the source directory");
+                sourceDir = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(sourceDir))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Please enter a valid source directory");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            while (true)
+            {
+                Console.WriteLine("Please enter the target directory");
+                targetDir = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(targetDir))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Please enter a valid target directory");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return (sourceDir, targetDir);
         }
     }
 }

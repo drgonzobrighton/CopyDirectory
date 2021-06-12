@@ -11,14 +11,14 @@ namespace CopyDirectory
             var services = ConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
 
-            await serviceProvider.GetService<CopyDirectoryApplication>().Run();
+            await serviceProvider.GetService<ICopyDirectoryApplication>().Run();
         }
 
         private static IServiceCollection ConfigureServices()
         {
             IServiceCollection services = new ServiceCollection();
 
-            services.AddSingleton<CopyDirectoryApplication>();
+            services.AddSingleton<ICopyDirectoryApplication, CopyDirectoryConsoleApplication>();
             services.AddScoped<ICopyDirectoryService, CopyDirectoryService>();
             services.AddScoped<IMessageLogger, MessageLogger>();
 

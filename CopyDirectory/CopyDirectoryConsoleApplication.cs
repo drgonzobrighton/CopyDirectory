@@ -1,19 +1,18 @@
 ﻿using Services;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace CopyDirectory
 {
-    public class CopyDirectoryApplication
+    public class CopyDirectoryConsoleApplication : ICopyDirectoryApplication
     {
         private readonly ICopyDirectoryService _directoryCopyService;
         private readonly IMessageLogger _messageLogger;
 
-        private List<ValidationMessage> _userInputValidationMessages;
+        //  private List<ValidationMessage> _userInputValidationMessages;
         private bool _canCopyFiles = true;
 
-        public CopyDirectoryApplication(ICopyDirectoryService directoryCopyService, IMessageLogger progressLogger)
+        public CopyDirectoryConsoleApplication(ICopyDirectoryService directoryCopyService, IMessageLogger progressLogger)
         {
             _directoryCopyService = directoryCopyService;
             _messageLogger = progressLogger;
@@ -25,7 +24,6 @@ namespace CopyDirectory
 
             do
             {
-                _userInputValidationMessages = new();
 
                 if (ValidateUserInput())
                 {
@@ -36,23 +34,16 @@ namespace CopyDirectory
                         await CopyDirectory();
                     }
                 }
-                else
-                {
-                    foreach (var message in _userInputValidationMessages)
-                    {
-                        _messageLogger.LogMessage(message.Message, message.MessageType);
-                    }
-                }
 
                 PromtExit(ref exitApp);
 
             } while (!exitApp);
         }
 
-        public void OnUserInputValidated(ValidationMessage message)
+        public void OnUserInputValidated(string message, MessageType messageType)
         {
-            _messageLogger.LogMessage(message.Message, message.MessageType);
-            _messageLogger.LogMessage("\n Please press Y to copy the source directory or N to re-enter the paths.");
+            _messageLogger.LogMessage(message, messageType);
+            _messageLogger.LogMessage("\n Please press Y to copy the source directory or any other key to continue.");
 
             string response;
 
@@ -71,7 +62,7 @@ namespace CopyDirectory
                 }
             }
 
-            if (response.ToLower() == "N")
+            if (response.ToLower() == "n")
             {
                 _canCopyFiles = false;
             }
@@ -99,9 +90,9 @@ namespace CopyDirectory
 
             _directoryCopyService.Init(sourceDir, targetDir, _messageLogger);
 
-            if (!_directoryCopyService.ValidatePaths(out var validationMessages))
+            if (!_directoryCopyService.ValidatePaths())
             {
-                _userInputValidationMessages = validationMessages;
+
                 return false;
             }
 

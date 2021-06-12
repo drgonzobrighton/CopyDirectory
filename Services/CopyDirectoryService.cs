@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,9 +31,9 @@ namespace Services
 
 
 
-        public bool ValidatePaths(out List<ValidationMessage> validationMessages)
+        public bool ValidatePaths()
         {
-            validationMessages = new();
+            var isValid = true;
 
             try
             {
@@ -45,12 +44,15 @@ namespace Services
                 {
                     if (!DriveInfo.GetDrives().Any(x => x.Name.ToLower() == Path.GetPathRoot(_targetDirectoryPath)))
                     {
-                        validationMessages.Add(new("The target directory root does not exist", MessageType.Error));
+                        _messageLogger.LogMessage("The target directory root does not exist", MessageType.Error);
+                        isValid = false;
                     }
                 }
                 else
                 {
-                    validationMessages.Add(new("The target directory path must have a root", MessageType.Error));
+                    _messageLogger.LogMessage("The target directory path must have a root", MessageType.Error);
+                    isValid = false;
+
                 }
 
                 if (sourceDirInfo.Exists)
@@ -59,22 +61,28 @@ namespace Services
 
                     if (sourceDirInfo.FullName.ToLower() == targetDirInfo.FullName.ToLower())
                     {
-                        validationMessages.Add(new("The target directory is the same as the source directory", MessageType.Warning));
+                        _messageLogger.LogMessage("The target directory is the same as the source directory", MessageType.Warning);
+                        isValid = false;
+
                     }
                 }
                 else
                 {
-                    validationMessages.Add(new("The source directory does not exist", MessageType.Error));
+                    _messageLogger.LogMessage("The source directory does not exist", MessageType.Error);
+                    isValid = false;
+
 
                 }
             }
             catch (Exception e)
             {
 
-                validationMessages.Add(new(e.Message, MessageType.Error));
+                _messageLogger.LogMessage(e.Message, MessageType.Error);
+                isValid = false;
+
             }
 
-            return validationMessages.Count == 0;
+            return isValid;
         }
 
         private async Task CopyDirectoryInternal(DirectoryInfo sourceDirInfo, DirectoryInfo targetDirInfo)
@@ -96,11 +104,11 @@ namespace Services
 
         }
 
-        public void OnPathsValidated(Action<ValidationMessage> onvalidatedDelegate)
+        public void OnPathsValidated(Action<string, MessageType> onvalidatedDelegate)
         {
             if (new DirectoryInfo(_targetDirectoryPath).Exists)
             {
-                onvalidatedDelegate(new ValidationMessage("The source path already exists. Copying will override the folder's contents.", MessageType.Warning));
+                onvalidatedDelegate("The source path already exists. Copying will override the folder's contents.", MessageType.Warning);
             }
         }
     }

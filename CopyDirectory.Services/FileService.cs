@@ -11,15 +11,20 @@ namespace CopyDirectory.Services
         {
             statusCallback("Starting..", FileCopyStatus.Started);
 
-            await CopyDirectoryInternal(new DirectoryInfo(sourceDirPath), new DirectoryInfo(targetDirPath), statusCallback);
+            var succeeded = await CopyDirectoryInternal(new DirectoryInfo(sourceDirPath), new DirectoryInfo(targetDirPath), statusCallback);
 
-            statusCallback("Finished", FileCopyStatus.Finished);
+            if (!succeeded)
+            {
+                statusCallback("Finished", FileCopyStatus.Finished);
+            }
+
         }
 
 
 
-        private async Task CopyDirectoryInternal(DirectoryInfo sourceDirInfo, DirectoryInfo targetDirInfo, Action<string, FileCopyStatus> statusCallback)
+        private async Task<bool> CopyDirectoryInternal(DirectoryInfo sourceDirInfo, DirectoryInfo targetDirInfo, Action<string, FileCopyStatus> statusCallback)
         {
+            var hasErrored = false;
             try
             {
                 Directory.CreateDirectory(targetDirInfo.FullName);
@@ -40,7 +45,10 @@ namespace CopyDirectory.Services
             catch (Exception e)
             {
                 statusCallback(e.Message, FileCopyStatus.Errored);
+                hasErrored = true;
             }
+
+            return hasErrored;
 
         }
 

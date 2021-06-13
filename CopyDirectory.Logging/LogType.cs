@@ -1,6 +1,6 @@
-﻿namespace Services
+﻿namespace CopyDirectory.Logging
 {
-    public enum MessageType
+    public enum LogType
     {
         Info,
         Warning,

@@ -10,7 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Services\Services.csproj" />
+    <ProjectReference Include="..\CopyDirectory.Logging\CopyDirectory.Logging.csproj" />
+    <ProjectReference Include="..\Infrastructure\CopyDirectory.Validation.csproj" />
+    <ProjectReference Include="..\Services\CopyDirectory.Services.csproj" />
   </ItemGroup>
 
 </Project>

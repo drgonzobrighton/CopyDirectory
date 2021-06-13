@@ -14,9 +14,6 @@ namespace CopyDirectory.UserInterface
         private readonly IMessageLogger _messageLogger;
         private readonly IPathValidator _pathValidator;
 
-        //  private List<ValidationMessage> _userInputValidationMessages;
-        private bool _canCopyFiles = true;
-
         public CopyDirectoryConsoleApplication(IFileService directoryCopyService, IMessageLogger progressLogger, IPathValidator pathValidator)
         {
             _directoryCopyService = directoryCopyService;
@@ -32,46 +29,17 @@ namespace CopyDirectory.UserInterface
             {
                 (string sourceDirPath, string targetDirPath) = GetSourceAndTargetPathsFromUser();
 
-                // _directoryCopyService.OnPathsValidated(OnUserInputValidated);
-
-                if (_canCopyFiles)
-                {
-                    await CopyDirectory(sourceDirPath, targetDirPath);
-                }
-
+                await CopyDirectory(sourceDirPath, targetDirPath);
 
                 PromtExit(ref exitApp);
 
             } while (!exitApp);
         }
 
-        //public void OnUserInputValidated(string message, MessageType messageType)
-        //{
-        //    _messageLogger.LogMessage(message, messageType);
-        //    _messageLogger.LogMessage("\n Please press [Y] to copy the source directory or any other key to continue.");
-
-        //    string response;
-
-        //    while (true)
-        //    {
-
-        //        response = Console.ReadLine();
-
-        //        if (string.IsNullOrWhiteSpace(response) || (response.ToLower() != "y" && response.ToLower() != "n"))
-        //        {
-        //            _messageLogger.LogMessage("Please either press [Y] or [N]", MessageType.Error);
-        //        }
-        //        else
-        //        {
-        //            break;
-        //        }
-        //    }
-
-        //    if (response.ToLower() == "n")
-        //    {
-        //        _canCopyFiles = false;
-        //    }
-        //}
+        public void StatusCallback(string message, FileCopyStatus fileCopyStatus)
+        {
+            _messageLogger.LogMessage(message, Converters.ConvertFileStatusToLogType(fileCopyStatus));
+        }
 
         private async Task CopyDirectory(string sourceDirPath, string targetDirPath)
         {
@@ -86,10 +54,6 @@ namespace CopyDirectory.UserInterface
 
         }
 
-        public void StatusCallback(string message, FileCopyStatus fileCopyStatus)
-        {
-            _messageLogger.LogMessage(message, Converters.ConvertFileStatusToLogType(fileCopyStatus));
-        }
 
 
         private void PromtExit(ref bool exitApp)
@@ -102,7 +66,6 @@ namespace CopyDirectory.UserInterface
                 exitApp = true;
             }
         }
-
 
 
         private (string sourceDir, string targetDir) GetSourceAndTargetPathsFromUser()

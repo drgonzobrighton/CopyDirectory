@@ -6,6 +6,5 @@ namespace CopyDirectory.Validation
     {
         List<ValidationMessage> ValidateSourcePath(string sourcePath);
         List<ValidationMessage> ValidateTargetPath(string targetPath, string sourcePath);
-        void OnPathValidated(string targetPath);
     }
 }

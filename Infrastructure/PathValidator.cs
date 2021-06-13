@@ -6,10 +6,6 @@ namespace CopyDirectory.Validation
 {
     public class PathValidator : IPathValidator
     {
-        public void OnPathValidated(string targetPath)
-        {
-            throw new System.NotImplementedException();
-        }
 
         public List<ValidationMessage> ValidateSourcePath(string sourcePath)
         {

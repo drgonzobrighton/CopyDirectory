@@ -6,6 +6,5 @@
         Copied,
         Errored,
         Finished
-
     }
 }

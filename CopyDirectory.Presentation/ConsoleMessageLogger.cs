@@ -2,7 +2,7 @@
 using CopyDirectory.Presentation.Utilities;
 using System;
 
-namespace CopyDirectory.UserInterface
+namespace CopyDirectory.Presentation
 {
     public class ConsoleMessageLogger : IMessageLogger
     {

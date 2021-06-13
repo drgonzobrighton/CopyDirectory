@@ -3,10 +3,9 @@ using CopyDirectory.Presentation.Utilities;
 using CopyDirectory.Services;
 using CopyDirectory.Validation;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace CopyDirectory.UserInterface
+namespace CopyDirectory.Presentation.UserInterface
 {
     public class CopyDirectoryConsoleApplication
     {
@@ -55,7 +54,6 @@ namespace CopyDirectory.UserInterface
         }
 
 
-
         private void PromtExit(ref bool exitApp)
         {
             Console.WriteLine("\nWould you like to copy another directory? Press [Y] for yes or any other key to exit the application.");
@@ -82,12 +80,12 @@ namespace CopyDirectory.UserInterface
 
             while (true)
             {
-                Console.WriteLine($"\nPlease enter the {pathType} directory path:");
+                Console.WriteLine($"\nPlease enter the {pathType.ToString().ToLower()} directory path:");
                 dirPath = Console.ReadLine();
 
                 var validationMessages = pathType == PathType.Source ? _pathValidator.ValidateSourcePath(dirPath) : _pathValidator.ValidateTargetPath(dirPath, sourcePath);
 
-                if (validationMessages.Count() > 0)
+                if (validationMessages.Count > 0)
                 {
                     foreach (var message in validationMessages)
                     {
@@ -100,7 +98,6 @@ namespace CopyDirectory.UserInterface
                     break;
                 }
 
-                //check warning
             }
 
             return dirPath;

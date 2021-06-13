@@ -1,6 +1,7 @@
 ﻿using CopyDirectory.Logging;
+using CopyDirectory.Presentation;
+using CopyDirectory.Presentation.UserInterface;
 using CopyDirectory.Services;
-using CopyDirectory.UserInterface;
 using CopyDirectory.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;

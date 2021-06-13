@@ -26,8 +26,8 @@ namespace CopyDirectory.Services
 
                 foreach (var fi in sourceDirInfo.GetFiles())
                 {
-                    statusCallback($"Copying {sourceDirInfo.FullName}/{fi.Name} to {targetDirInfo.FullName}/{fi.Name}", FileCopyStatus.Copied);
                     fi.CopyTo(Path.Combine(targetDirInfo.FullName, fi.Name), true);
+                    statusCallback($"Copying {sourceDirInfo.FullName}/{fi.Name} to {targetDirInfo.FullName}/{fi.Name}", FileCopyStatus.Copied);
                 }
 
                 foreach (var diSourceSubDir in sourceDirInfo.GetDirectories())
@@ -39,7 +39,6 @@ namespace CopyDirectory.Services
             }
             catch (Exception e)
             {
-
                 statusCallback(e.Message, FileCopyStatus.Errored);
             }
 
